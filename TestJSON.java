@@ -4,7 +4,7 @@ class TestJSON
 	public static void main (String[] args)
 	{
 		///*
-		BubblesJSONParser parser = new BubblesJSONParser("{0:'1', 2:\"string\"}");
+		BubblesJSONParser parser = new BubblesJSONParser("{\"sdfsdfsdf\":\"sdfsdfsdf}\"}");
 		BubblesJSONObject object = parser.parseString();
 		System.out.println(object.toFormattedString());
 		//*/

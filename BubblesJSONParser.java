@@ -75,6 +75,8 @@ class BubblesJSONParser
 	{
 		String output = "";
 		boolean insideString = false;
+		String stringClosingQuote = "";
+		int stringClosingQuoteIndex = 0;
 		int arrayNestCount = 0;
 		int objectNestCount = 0;
 		for (int i = charIndex; i < this.JSONString.length(); i++)
@@ -84,21 +86,21 @@ class BubblesJSONParser
 				switch (this.currentParseType)
 				{
 					case BubblesJSONParser.PARSE_TYPE_ARRAY:
-						if (compareCharAtIndexWithString(i, "["))
+						if (this.compareCharAtIndexWithString(i, "["))
 						{
 							arrayNestCount++;
 						}
-						else if (compareCharAtIndexWithString(i, "]"))
+						else if (this.compareCharAtIndexWithString(i, "]"))
 						{
 							arrayNestCount--;
 						}
 						break;
 					case BubblesJSONParser.PARSE_TYPE_OBJECT:
-						if (compareCharAtIndexWithString(i, "{"))
+						if (this.compareCharAtIndexWithString(i, "{"))
 						{
 							objectNestCount++;
 						}
-						else if (compareCharAtIndexWithString(i, "}"))
+						else if (this.compareCharAtIndexWithString(i, "}"))
 						{
 							objectNestCount--;
 						}
@@ -111,20 +113,23 @@ class BubblesJSONParser
 						(this.currentParseType == BubblesJSONParser.PARSE_TYPE_ARRAY && arrayNestCount == 0) || 
 						(this.currentParseType == BubblesJSONParser.PARSE_TYPE_OBJECT && objectNestCount == 0)
 					) &&
-					compareCharAtIndexWithString(i, "]}")
+					this.compareCharAtIndexWithString(i, "]}")
 				)
 				{
 					this.subStringCharIndex = i;
 					return this.JSONString.substring(charIndex, i+1);
 				}
-				else if (compareCharAtIndexWithString(i, "\"'"))
+				else if (this.compareCharAtIndexWithString(i, "\"'"))
 				{
+					stringClosingQuote = (String.valueOf(this.JSONString.charAt(i))); // 4-17-13
 					insideString = true;
 				}
 			}
-			else if (insideString == true && compareCharAtIndexWithString(i, "\"'") && !(this.compareCharAtIndexWithString(i-1, "\\")))
+			//else if (insideString == true && compareCharAtIndexWithString(i, "\"'") && !(this.compareCharAtIndexWithString(i-1, "\\")))
+			else if (insideString == true && this.compareCharAtIndexWithString(i, stringClosingQuote) && !(this.compareCharAtIndexWithString(i-1, "\\")))
 			{
 				insideString = false;
+				stringClosingQuoteIndex = i; // Necessary?
 			}
 		}
 		return output;
@@ -136,6 +141,7 @@ class BubblesJSONParser
 		int startIndex = 0;
 		boolean insideString = false;
 		String stringClosingQuote = "";
+		int stringClosingQuoteIndex = 0;
 		for (int i = charIndex; i < this.JSONString.length(); i++)
 		{
 			//System.out.println(this.JSONString.charAt(i)+"asd"+stringClosingQuote); //Debug
@@ -155,7 +161,12 @@ class BubblesJSONParser
 							return "";
 						}
 						*/
-						if (!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+stringClosingQuote)))
+						if
+						(
+							(this.currentParseType == BubblesJSONParser.PARSE_TYPE_STRING && stringClosingQuoteIndex == x+1) ||
+							(this.currentParseType != BubblesJSONParser.PARSE_TYPE_STRING && !(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+stringClosingQuote)))
+							//!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+stringClosingQuote))
+						)
 						{
 							//this.previousDelimiterErrorIndex = i; // Revisit
 							//System.out.println(this.previousDelimiterErrorIndex); // Debug
@@ -185,6 +196,7 @@ class BubblesJSONParser
 						insideString = true;
 						startIndex = i+1;
 						this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
+						
 					}
 					else
 					{
@@ -224,6 +236,8 @@ class BubblesJSONParser
 			else if (insideString == true && this.compareCharAtIndexWithString(i, stringClosingQuote) && !(this.compareCharAtIndexWithString(i-1, "\\")))
 			{
 				insideString = false;
+				stringClosingQuoteIndex = i;
+				//System.out.println(stringClosingQuoteIndex); // Debug
 			}
 		}
 		this.subStringCharIndex = this.JSONString.length();
