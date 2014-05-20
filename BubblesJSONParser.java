@@ -8,6 +8,7 @@ class BubblesJSONParser
 	public static final String PARSE_STATE_KEY = "PARSE_STATE_KEY";
 	public static final String PARSE_STATE_VALUE = "PARSE_STATE_VALUE";
 	
+	public static final String PARSE_TYPE_BOOLEAN = "PARSE_TYPE_BOOLEAN";
 	public static final String PARSE_TYPE_INT = "PARSE_TYPE_INT";
 	public static final String PARSE_TYPE_DOUBLE = "PARSE_TYPE_DOUBLE";
 	public static final String PARSE_TYPE_STRING = "PARSE_TYPE_STRING";
@@ -141,6 +142,7 @@ class BubblesJSONParser
 				{
 					for (int x = i; x >= charIndex; x--)
 					{
+						//System.out.println("Countback"); // Debug
 						if (!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+"\"")))
 						{
 							//System.out.println("start "+startIndex+"x"+x+" i"+i+"TEST"+this.JSONString.substring(startIndex, x+1)); // Debug
@@ -149,7 +151,7 @@ class BubblesJSONParser
 						}
 					}
 				}
-				if (startIndex ==0 && !(this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_WHITESPACE)))
+				if (startIndex == 0 && !(this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_WHITESPACE)))
 				{
 					if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_OPENING_OBJECT_DELIMITER))
 					{
@@ -170,7 +172,6 @@ class BubblesJSONParser
 						startIndex = i+1;
 						this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
 					}
-					
 					else
 					{
 						startIndex = i;
@@ -180,7 +181,21 @@ class BubblesJSONParser
 				{
 					if (!this.compareCharAtIndexWithString(i, "0123456789."))
 					{
-						this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
+						//System.out.println(this.JSONString.substring(i, i+5)); // Debug
+						if (this.JSONString.substring(i, i+4).equals("true"))
+						{
+							this.currentParseType = BubblesJSONParser.PARSE_TYPE_BOOLEAN;
+							i += 3;
+						}
+						else if (this.JSONString.substring(i, i+5).equals("false"))
+						{
+							this.currentParseType = BubblesJSONParser.PARSE_TYPE_BOOLEAN;
+							i += 4;
+						}
+						else if (!(this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_BOOLEAN)))
+						{
+							this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
+						}
 					}
 					else if (this.compareCharAtIndexWithString(i, "."))
 					{
@@ -267,9 +282,12 @@ class BubblesJSONParser
 					break;
 				case BubblesJSONParser.PARSE_STATE_VALUE:
 					this.value = this.parseElementFromCharIndex(i);
-					//System.out.println("value"+this.value);
+					//System.out.println("value"+this.value); // Debug
 					switch (this.currentParseType)
 					{
+						case BubblesJSONParser.PARSE_TYPE_BOOLEAN:
+							this.value = ((String)this.value).equals("true") ? true : (((String)this.value).equals("false") ? false : null);
+							break;
 						case BubblesJSONParser.PARSE_TYPE_INT:
 							this.value = Integer.parseInt((String)this.value);
 							break;

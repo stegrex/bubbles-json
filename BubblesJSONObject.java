@@ -183,6 +183,10 @@ class BubblesJSONObject
 				{
 					output += "\""+value+"\"";
 				}
+				else if (value instanceof Boolean)
+				{
+					output += (boolean)value ? "true" : "false";
+				}
 				else if (value instanceof BubblesJSONObject)
 				{
 					output += (this.outputFormattedString) ? "\n"+((BubblesJSONObject)value).toFormattedString(depth+1) : ((BubblesJSONObject)value).toString(depth+1);
@@ -217,6 +221,10 @@ class BubblesJSONObject
 				else if (entry.getValue() instanceof String)
 				{
 					output += "\""+entry.getValue()+"\"";
+				}
+				else if (entry.getValue() instanceof Boolean)
+				{
+					output += (boolean)(entry.getValue()) ? "true" : "false";
 				}
 				else if (entry.getValue() instanceof BubblesJSONObject)
 				{
