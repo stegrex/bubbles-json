@@ -1,8 +1,6 @@
 class BubblesJSONParser
 {
 	
-	// 1-6-12: Max: Implement a function that looks ahead to figure out what data type.
-	
 	public static final String DATA_TYPE_ARRAY = "DATA_TYPE_ARRAY";
 	public static final String DATA_TYPE_OBJECT = "DATA_TYPE_OBJECT";
 	
@@ -16,6 +14,11 @@ class BubblesJSONParser
 	public static final String PARSE_TYPE_ARRAY = "PARSE_TYPE_ARRAY";
 	public static final String PARSE_TYPE_OBJECT = "PARSE_TYPE_OBJECT";
 	public static final String PARSE_TYPE_OTHER = "PARSE_TYPE_OTHER";
+	
+	private static final String CHAR_TYPE_WHITESPACE = " \t\r\n";
+	private static final String CHAR_TYPE_ELEMENT_DELIMITER = ":,";
+	private static final String CHAR_TYPE_OPENING_OBJECT_DELIMITER = "[{";
+	private static final String CHAR_TYPE_CLOSING_OBJECT_DELIMITER = "]}";
 	
 	public String JSONString;
 	public BubblesJSONObject object;
@@ -138,7 +141,7 @@ class BubblesJSONParser
 				{
 					for (int x = i; x >= charIndex; x--)
 					{
-						if (!(this.compareCharAtIndexWithString(x, " \r\n\":,]}")))
+						if (!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+"\"")))
 						{
 							//System.out.println("start "+startIndex+"x"+x+" i"+i+"TEST"+this.JSONString.substring(startIndex, x+1)); // Debug
 							this.subStringCharIndex = x;
@@ -146,9 +149,9 @@ class BubblesJSONParser
 						}
 					}
 				}
-				if (startIndex ==0 && !(this.compareCharAtIndexWithString(i, " \r\n")))
+				if (startIndex ==0 && !(this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_WHITESPACE)))
 				{
-					if (this.compareCharAtIndexWithString(i, "[{"))
+					if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_OPENING_OBJECT_DELIMITER))
 					{
 						startIndex = i;
 						if (this.compareCharAtIndexWithString(i, "["))
@@ -173,7 +176,7 @@ class BubblesJSONParser
 						startIndex = i;
 					}
 				}
-				if (i >= startIndex && !this.compareCharAtIndexWithString(i, " \r\n:,]}"))
+				if (i >= startIndex && !this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER))
 				{
 					if (!this.compareCharAtIndexWithString(i, "0123456789."))
 					{
@@ -201,7 +204,7 @@ class BubblesJSONParser
 			switch (this.currentParseState)
 			{
 				case BubblesJSONParser.PARSE_STATE_SYNTAX:
-					if (this.compareCharAtIndexWithString(i, "[{"))
+					if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_OPENING_OBJECT_DELIMITER))
 					{
 						this.object = new BubblesJSONObject();
 						if (this.compareCharAtIndexWithString(i, "["))
@@ -232,7 +235,7 @@ class BubblesJSONParser
 							this.currentParseState = BubblesJSONParser.PARSE_STATE_KEY;
 						}
 					}
-					else if (this.compareCharAtIndexWithString(i, "]}"))
+					else if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER))
 					{
 						if (this.currentDataType.equals(BubblesJSONParser.DATA_TYPE_ARRAY))
 						{

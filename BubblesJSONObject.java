@@ -3,8 +3,12 @@ import java.util.*;
 class BubblesJSONObject
 {
 	
+	// 2-10-13: To do: Handle nulls and empty arrays/objects.
+	
 	public static final String TYPE_ARRAY = "TYPE_ARRAY";
 	public static final String TYPE_OBJECT = "TYPE_OBJECT";
+	
+	//private boolean isEmpty;
 	
 	private String type;
 	private ArrayList<Object> arrayElements;
@@ -14,17 +18,20 @@ class BubblesJSONObject
 	
 	public BubblesJSONObject ()
 	{
+		//this.isEmpty = true;
 		this.type = BubblesJSONObject.TYPE_OBJECT;
 		this.arrayElements = new ArrayList<Object>(0);
 		this.hashElements = new HashMap<Object, Object>(0);
 	}
 	public BubblesJSONObject (Object value)
 	{
+		//this.isEmpty = false;
 		this.arrayElements = new ArrayList<Object>(0);
 		this.addValue(value);
 	}
 	public BubblesJSONObject (Object key, Object value)
 	{
+		//this.isEmpty = false;
 		this.hashElements = new HashMap<Object, Object>(0);
 		this.addKeyValue(key, value);
 	}
@@ -39,6 +46,7 @@ class BubblesJSONObject
 	}
 	public boolean addValue (Object value)
 	{
+		//this.isEmpty = false;
 		this.type = BubblesJSONObject.TYPE_ARRAY;
 		this.arrayElements.add(value);
 		return true;
@@ -49,9 +57,58 @@ class BubblesJSONObject
 		{
 			return false;
 		}
+		//this.isEmpty = false;
 		this.type = BubblesJSONObject.TYPE_OBJECT;
 		this.hashElements.put(key, value);
 		return true;
+	}
+	
+	/*
+	public Object getIterableObject ()
+	{
+		switch (this.type)
+		{
+			case BubblesJSONObject.TYPE_ARRAY:
+				return this.arrayElements;
+			case BubblesJSONObject.TYPE_OBJECT:
+				return this.hashElements;
+			default:
+				break;
+		}
+		return false;
+	}
+	*/
+	
+	public boolean doesKeyExist (Object key)
+	{
+		if (this.type == BubblesJSONObject.TYPE_OBJECT)
+		{
+			return this.hashElements.containsKey(key);
+		}
+		return false;
+	}
+	
+	public boolean isObjectEmpty ()
+	{
+		switch (this.type)
+		{
+			case BubblesJSONObject.TYPE_ARRAY:
+				return this.arrayElements.isEmpty();
+			case BubblesJSONObject.TYPE_OBJECT:
+				return this.hashElements.isEmpty();
+			default:
+				break;
+		}
+		return true;
+	}
+	
+	public Set<Object> getKeySet ()
+	{
+		//if (this.type == BubblesJSONObject.TYPE_OBJECT)
+		{
+			return this.hashElements.keySet();
+		}
+		//return false;
 	}
 	
 	public Object get (Object key)
@@ -59,9 +116,9 @@ class BubblesJSONObject
 		switch (this.type)
 		{
 			case BubblesJSONObject.TYPE_ARRAY:
-				return arrayElements.get((Integer)key);
+				return this.arrayElements.get((Integer)key);
 			case BubblesJSONObject.TYPE_OBJECT:
-				return hashElements.get(key);
+				return this.hashElements.get(key);
 			default:
 				break;
 		}
