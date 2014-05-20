@@ -83,9 +83,12 @@ class BubblesJSONParser
 		{
 			if (insideString == false)
 			{
-				switch (this.currentParseType)
+				// Rewriten to be compatible with OpenJDK.
+				//switch (this.currentParseType)
 				{
-					case BubblesJSONParser.PARSE_TYPE_ARRAY:
+					//case BubblesJSONParser.PARSE_TYPE_ARRAY:
+					if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_ARRAY))
+					{
 						if (this.compareCharAtIndexWithString(i, "["))
 						{
 							arrayNestCount++;
@@ -94,8 +97,11 @@ class BubblesJSONParser
 						{
 							arrayNestCount--;
 						}
-						break;
-					case BubblesJSONParser.PARSE_TYPE_OBJECT:
+						//break;
+					}
+					//case BubblesJSONParser.PARSE_TYPE_OBJECT:
+					else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_OBJECT))
+					{
 						if (this.compareCharAtIndexWithString(i, "{"))
 						{
 							objectNestCount++;
@@ -104,9 +110,10 @@ class BubblesJSONParser
 						{
 							objectNestCount--;
 						}
-						break;
-					default:
-						break;
+						//break;
+					}
+					//default:
+						//break;
 				}
 				if (
 					(
@@ -248,9 +255,12 @@ class BubblesJSONParser
 	{
 		for (int i = 0; i < this.JSONString.length(); i++)
 		{
-			switch (this.currentParseState)
+			// Rewritten to be compatible with OpenJDK.
+			//switch (this.currentParseState)
 			{
-				case BubblesJSONParser.PARSE_STATE_SYNTAX:
+				//case BubblesJSONParser.PARSE_STATE_SYNTAX:
+				if (this.currentParseState.equals(BubblesJSONParser.PARSE_STATE_SYNTAX))
+				{
 					if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_OPENING_OBJECT_DELIMITER))
 					{
 						this.object = new BubblesJSONObject();
@@ -294,57 +304,88 @@ class BubblesJSONParser
 						}
 						return this.object;
 					}
-					break;
-				case BubblesJSONParser.PARSE_STATE_KEY:
+					//break;
+				}
+				//case BubblesJSONParser.PARSE_STATE_KEY:
+				else if (this.currentParseState.equals(BubblesJSONParser.PARSE_STATE_KEY))
+				{
 					this.key = this.parseElementFromCharIndex(i);
-					switch (this.currentParseType)
-					{
-						case BubblesJSONParser.PARSE_TYPE_INT:
+					// Rewritten to be compatible with OpenJDK.
+					//switch (this.currentParseType)
+						//case BubblesJSONParser.PARSE_TYPE_INT:
+						if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_INT))
+						{
 							this.key = Integer.parseInt((String)this.key);
-							break;
-						case BubblesJSONParser.PARSE_TYPE_DOUBLE:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_DOUBLE:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_DOUBLE))
+						{
 							this.key = Double.parseDouble((String)this.key);
-							break;
-						default:
-							break;
-					}
+							//break;
+						}
+						//default:
+							//break;
 					this.currentParseType = BubblesJSONParser.PARSE_TYPE_OTHER;
 					this.currentParseState = BubblesJSONParser.PARSE_STATE_SYNTAX;
 					i = this.subStringCharIndex;
-					break;
-				case BubblesJSONParser.PARSE_STATE_VALUE:
+					//break;
+				}
+				//case BubblesJSONParser.PARSE_STATE_VALUE:
+				else if (this.currentParseState.equals(BubblesJSONParser.PARSE_STATE_VALUE))
+				{
 					this.value = this.parseElementFromCharIndex(i);
 					//System.out.println("value"+this.value); // Debug
-					switch (this.currentParseType)
+					// Rewritten to be compatible with OpenJDK.
+					//switch (this.currentParseType)
 					{
-						case BubblesJSONParser.PARSE_TYPE_NULL:
+						//case BubblesJSONParser.PARSE_TYPE_NULL:
+						if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_NULL))
+						{
 							this.value = null;
-							break;
-						case BubblesJSONParser.PARSE_TYPE_BOOLEAN:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_BOOLEAN:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_BOOLEAN))
+						{
 							this.value = ((String)this.value).equals("true") ? true : (((String)this.value).equals("false") ? false : null);
-							break;
-						case BubblesJSONParser.PARSE_TYPE_INT:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_INT:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_INT))
+						{
 							this.value = Integer.parseInt((String)this.value);
-							break;
-						case BubblesJSONParser.PARSE_TYPE_DOUBLE:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_DOUBLE:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_DOUBLE))
+						{
 							this.value = Double.parseDouble((String)this.value);
-							break;
-						case BubblesJSONParser.PARSE_TYPE_ARRAY:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_ARRAY:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_ARRAY))
+						{
 							this.subParser = new BubblesJSONParser((String)this.value);
 							this.value = this.subParser.parseString();
-							break;
-						case BubblesJSONParser.PARSE_TYPE_OBJECT:
+							//break;
+						}
+						//case BubblesJSONParser.PARSE_TYPE_OBJECT:
+						else if (this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_OBJECT))
+						{
 							this.subParser = new BubblesJSONParser((String)this.value);
 							this.value = this.subParser.parseString();
-							break;
-						default:
-							break;
+							//break;
+						}
+						//default:
+							//break;
 					}
 					this.currentParseState = BubblesJSONParser.PARSE_STATE_SYNTAX;
 					i = this.subStringCharIndex;
-					break;
-				default:
-					break;
+					//break;
+				}
+				//default:
+					//break;
 			}
 		}
 		return this.object;

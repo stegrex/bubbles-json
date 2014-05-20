@@ -81,7 +81,7 @@ class BubblesJSONObject
 	
 	public boolean doesKeyExist (Object key)
 	{
-		if (this.type == BubblesJSONObject.TYPE_OBJECT)
+		if (this.type.equals(BubblesJSONObject.TYPE_OBJECT))
 		{
 			return this.hashElements.containsKey(key);
 		}
@@ -90,6 +90,16 @@ class BubblesJSONObject
 	
 	public boolean isObjectEmpty ()
 	{
+		if (this.type.equals(BubblesJSONObject.TYPE_ARRAY))
+		{
+			return this.arrayElements.isEmpty();
+		}
+		else if (this.type.equals(BubblesJSONObject.TYPE_OBJECT))
+		{
+			return this.hashElements.isEmpty();
+		}
+		// Rewritten for compatibility with OpenJDK.
+		/*
 		switch (this.type)
 		{
 			case BubblesJSONObject.TYPE_ARRAY:
@@ -99,6 +109,7 @@ class BubblesJSONObject
 			default:
 				break;
 		}
+		*/
 		return true;
 	}
 	
@@ -113,6 +124,16 @@ class BubblesJSONObject
 	
 	public Object get (Object key)
 	{
+		if (this.type.equals(BubblesJSONObject.TYPE_ARRAY))
+		{
+			return this.arrayElements.get((Integer)key);
+		}
+		else if (this.type.equals(BubblesJSONObject.TYPE_OBJECT))
+		{
+			return this.hashElements.get(key);
+		}
+		// Rewritten for compatibility with OpenJDK.
+		/*
 		switch (this.type)
 		{
 			case BubblesJSONObject.TYPE_ARRAY:
@@ -122,6 +143,7 @@ class BubblesJSONObject
 			default:
 				break;
 		}
+		*/
 		return false;
 	}
 	public BubblesJSONObject getObject (Object key)
@@ -164,7 +186,7 @@ class BubblesJSONObject
 	{
 		boolean firstElement = true;
 		String output = "";
-		if (this.type == TYPE_ARRAY)
+		if (this.type.equals(TYPE_ARRAY))
 		{
 			output += (this.outputFormattedString == true) ? repeatTab(depth)+"[\n" : "[ ";
 			for (Object value : this.arrayElements)
@@ -181,7 +203,9 @@ class BubblesJSONObject
 				}
 				else if (value instanceof Boolean)
 				{
-					output += (boolean)value ? "true" : "false";
+					Boolean booleanInstance = new Boolean(true);
+					output += booleanInstance.equals(value) ? "true" : false;
+					//output += (boolean)value ? "true" : "false";
 				}
 				else if (value instanceof Integer || value instanceof Double)
 				{
@@ -224,7 +248,9 @@ class BubblesJSONObject
 				}
 				else if (entry.getValue() instanceof Boolean)
 				{
-					output += (boolean)(entry.getValue()) ? "true" : "false";
+					Boolean booleanInstance = new Boolean(true);
+					output += booleanInstance.equals(entry.getValue()) ? "true" : "false";
+					//output += (boolean)(entry.getValue()) ? "true" : "false";
 				}
 				else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Double)
 				{
