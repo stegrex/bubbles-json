@@ -175,17 +175,21 @@ class BubblesJSONObject
 				}
 				firstElement = false;
 				output += repeatTab(depth+1);
-				if (value instanceof Integer || value instanceof Double)
+				if (value == null)
+				{
+					output += "null";
+				}
+				else if (value instanceof Boolean)
+				{
+					output += (boolean)value ? "true" : "false";
+				}
+				else if (value instanceof Integer || value instanceof Double)
 				{
 					output += value;
 				}
 				else if (value instanceof String)
 				{
 					output += "\""+value+"\"";
-				}
-				else if (value instanceof Boolean)
-				{
-					output += (boolean)value ? "true" : "false";
 				}
 				else if (value instanceof BubblesJSONObject)
 				{
@@ -214,17 +218,21 @@ class BubblesJSONObject
 					output += "\""+entry.getKey()+"\"";
 				}
 				output += " : ";
-				if (entry.getValue() instanceof Integer || entry.getValue() instanceof Double)
+				if (entry.getValue() == null)
+				{
+					output += "null";
+				}
+				else if (entry.getValue() instanceof Boolean)
+				{
+					output += (boolean)(entry.getValue()) ? "true" : "false";
+				}
+				else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Double)
 				{
 					output += entry.getValue();
 				}
 				else if (entry.getValue() instanceof String)
 				{
 					output += "\""+entry.getValue()+"\"";
-				}
-				else if (entry.getValue() instanceof Boolean)
-				{
-					output += (boolean)(entry.getValue()) ? "true" : "false";
 				}
 				else if (entry.getValue() instanceof BubblesJSONObject)
 				{

@@ -8,6 +8,7 @@ class BubblesJSONParser
 	public static final String PARSE_STATE_KEY = "PARSE_STATE_KEY";
 	public static final String PARSE_STATE_VALUE = "PARSE_STATE_VALUE";
 	
+	public static final String PARSE_TYPE_NULL = "PARSE_TYPE_NULL";
 	public static final String PARSE_TYPE_BOOLEAN = "PARSE_TYPE_BOOLEAN";
 	public static final String PARSE_TYPE_INT = "PARSE_TYPE_INT";
 	public static final String PARSE_TYPE_DOUBLE = "PARSE_TYPE_DOUBLE";
@@ -36,6 +37,8 @@ class BubblesJSONParser
 	private int subStringCharIndex;
 	private BubblesJSONParser subParser;
 	private BubblesJSONObject subObject;
+	
+	//private int previousDelimiterErrorIndex; // Revisit. Use a general error index if required.
 	
 	public BubblesJSONParser (String JSONString)
 	{
@@ -111,16 +114,15 @@ class BubblesJSONParser
 					compareCharAtIndexWithString(i, "]}")
 				)
 				{
-					//System.out.println("endindex"+i); // Debug
 					this.subStringCharIndex = i;
 					return this.JSONString.substring(charIndex, i+1);
 				}
-				else if (compareCharAtIndexWithString(i, "\""))
+				else if (compareCharAtIndexWithString(i, "\"'"))
 				{
 					insideString = true;
 				}
 			}
-			else if (insideString == true && compareCharAtIndexWithString(i, "\"") && !(this.compareCharAtIndexWithString(i-1, "\\")))
+			else if (insideString == true && compareCharAtIndexWithString(i, "\"'") && !(this.compareCharAtIndexWithString(i-1, "\\")))
 			{
 				insideString = false;
 			}
@@ -133,19 +135,30 @@ class BubblesJSONParser
 		this.currentParseType = BubblesJSONParser.PARSE_TYPE_INT;
 		int startIndex = 0;
 		boolean insideString = false;
+		String stringClosingQuote = "";
 		for (int i = charIndex; i < this.JSONString.length(); i++)
 		{
+			//System.out.println(this.JSONString.charAt(i)+"asd"+stringClosingQuote); //Debug
 			if (insideString == false)
 			{
-				// If not inside string and found a delimiter, stop and find the last index of string that is valid.
-				if (this.compareCharAtIndexWithString(i, ":,]}")) // Could probably define this string of chars as a group of special delimiter characters.
+				if (this.compareCharAtIndexWithString(i, BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER))
 				{
 					for (int x = i; x >= charIndex; x--)
 					{
-						//System.out.println("Countback"); // Debug
-						if (!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+"\"")))
+						// Revisit. Error index pointer required?
+						/*
+						if (x == previousDelimiterErrorIndex && (stringClosingQuote.equals("\"") || stringClosingQuote.equals("'")))
 						{
-							//System.out.println("start "+startIndex+"x"+x+" i"+i+"TEST"+this.JSONString.substring(startIndex, x+1)); // Debug
+							//System.out.println("thing"+i); // Debug
+							//System.out.println(this.previousDelimiterErrorIndex); // Debug
+							this.subStringCharIndex = i;
+							return "";
+						}
+						*/
+						if (!(this.compareCharAtIndexWithString(x, BubblesJSONParser.CHAR_TYPE_WHITESPACE+BubblesJSONParser.CHAR_TYPE_ELEMENT_DELIMITER+BubblesJSONParser.CHAR_TYPE_CLOSING_OBJECT_DELIMITER+stringClosingQuote)))
+						{
+							//this.previousDelimiterErrorIndex = i; // Revisit
+							//System.out.println(this.previousDelimiterErrorIndex); // Debug
 							this.subStringCharIndex = x;
 							return this.JSONString.substring(startIndex, x+1);
 						}
@@ -166,8 +179,9 @@ class BubblesJSONParser
 						}
 						return this.getSubObjectStringFromCharIndex(i);
 					}
-					else if (this.compareCharAtIndexWithString(i, "\""))
+					else if (this.compareCharAtIndexWithString(i, "\"'"))
 					{
+						stringClosingQuote = (String.valueOf(this.JSONString.charAt(i)));
 						insideString = true;
 						startIndex = i+1;
 						this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
@@ -181,8 +195,12 @@ class BubblesJSONParser
 				{
 					if (!this.compareCharAtIndexWithString(i, "0123456789."))
 					{
-						//System.out.println(this.JSONString.substring(i, i+5)); // Debug
-						if (this.JSONString.substring(i, i+4).equals("true"))
+						if (this.JSONString.substring(i, i+4).equals("null"))
+						{
+							this.currentParseType = BubblesJSONParser.PARSE_TYPE_NULL;
+							i += 3;
+						}
+						else if (this.JSONString.substring(i, i+4).equals("true"))
 						{
 							this.currentParseType = BubblesJSONParser.PARSE_TYPE_BOOLEAN;
 							i += 3;
@@ -192,7 +210,7 @@ class BubblesJSONParser
 							this.currentParseType = BubblesJSONParser.PARSE_TYPE_BOOLEAN;
 							i += 4;
 						}
-						else if (!(this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_BOOLEAN)))
+						else if (!(this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_NULL)) && !(this.currentParseType.equals(BubblesJSONParser.PARSE_TYPE_BOOLEAN)))
 						{
 							this.currentParseType = BubblesJSONParser.PARSE_TYPE_STRING;
 						}
@@ -203,11 +221,12 @@ class BubblesJSONParser
 					}
 				}
 			}
-			else if (insideString == true && this.compareCharAtIndexWithString(i, "\"") && !(this.compareCharAtIndexWithString(i-1, "\\")))
+			else if (insideString == true && this.compareCharAtIndexWithString(i, stringClosingQuote) && !(this.compareCharAtIndexWithString(i-1, "\\")))
 			{
 				insideString = false;
 			}
 		}
+		this.subStringCharIndex = this.JSONString.length();
 		return "";
 	}
 	
@@ -215,7 +234,6 @@ class BubblesJSONParser
 	{
 		for (int i = 0; i < this.JSONString.length(); i++)
 		{
-			//System.out.println(this.currentParseState+" "+i+" "+this.getStringAtCharIndex(i)); // Debug
 			switch (this.currentParseState)
 			{
 				case BubblesJSONParser.PARSE_STATE_SYNTAX:
@@ -285,6 +303,9 @@ class BubblesJSONParser
 					//System.out.println("value"+this.value); // Debug
 					switch (this.currentParseType)
 					{
+						case BubblesJSONParser.PARSE_TYPE_NULL:
+							this.value = null;
+							break;
 						case BubblesJSONParser.PARSE_TYPE_BOOLEAN:
 							this.value = ((String)this.value).equals("true") ? true : (((String)this.value).equals("false") ? false : null);
 							break;
@@ -305,15 +326,12 @@ class BubblesJSONParser
 						default:
 							break;
 					}
-					//this.currentParseType = BubblesJSONParser.PARSE_TYPE_OTHER;
 					this.currentParseState = BubblesJSONParser.PARSE_STATE_SYNTAX;
 					i = this.subStringCharIndex;
 					break;
-				
 				default:
 					break;
 			}
-			// Revisit. Add handling for the index.
 		}
 		return this.object;
 	}
